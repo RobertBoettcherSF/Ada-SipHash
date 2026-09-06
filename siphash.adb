@@ -76,10 +76,12 @@ package body SipHash is
    begin
       -- Process all complete 8-byte blocks
       for I in Integer range 1 .. Blocks loop
+         pragma Unreferenced (I);
          M_Block := Load_LE (Message, M_Idx);
          V(3) := V(3) xor M_Block;
          
          for R in Integer range 1 .. C loop
+            pragma Unreferenced (R);
             Sip_Round (V);
          end loop;
          
@@ -98,6 +100,7 @@ package body SipHash is
       -- Process the final padded block
       V(3) := V(3) xor B;
       for R in Integer range 1 .. C loop
+         pragma Unreferenced (R);
          Sip_Round (V);
       end loop;
       V(0) := V(0) xor B;
@@ -118,6 +121,7 @@ package body SipHash is
       -- Finalization for 64-bit tag
       V(2) := V(2) xor Word64 (16#ff#);
       for R in Integer range 1 .. D loop
+         pragma Unreferenced (R);
          Sip_Round (V);
       end loop;
       
@@ -140,6 +144,7 @@ package body SipHash is
       -- Phase 1 Finalization for the low 64-bits
       V(2) := V(2) xor Word64 (16#ee#);
       for R in Integer range 1 .. D loop
+         pragma Unreferenced (R);
          Sip_Round (V);
       end loop;
       Res.Low := V(0) xor V(1) xor V(2) xor V(3);
@@ -147,6 +152,7 @@ package body SipHash is
       -- Phase 2 Finalization for the high 64-bits
       V(1) := V(1) xor Word64 (16#dd#);
       for R in Integer range 1 .. D loop
+         pragma Unreferenced (R);
          Sip_Round (V);
       end loop;
       Res.High := V(0) xor V(1) xor V(2) xor V(3);
