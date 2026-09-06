@@ -17,16 +17,16 @@ procedure Tests is
    end Check;
 
    -- Standardized test keys
-   K0 : constant Key_Type := (others => 0);
-   K1 : constant Key_Type := (0 => 1, others => 0);
-   K2 : constant Key_Type := (15 => 1, others => 0);
+   K0 : constant Key_Type := [others => 0];
+   K1 : constant Key_Type := [0 => 1, others => 0];
+   K2 : constant Key_Type := [15 => 1, others => 0];
 
    -- Standardized test messages of various sizes
-   M0 : constant Byte_Array (1 .. 0) := (others => 0);
-   M1 : constant Byte_Array (0 .. 0) := (0 => 16#42#);
-   M7 : constant Byte_Array (0 .. 6) := (others => 16#AB#);
-   M8 : constant Byte_Array (0 .. 7) := (others => 16#AB#);
-   M9 : constant Byte_Array (0 .. 8) := (others => 16#AB#);
+   M0 : constant Byte_Array (1 .. 0) := [others => 0];
+   M1 : constant Byte_Array (0 .. 0) := [0 => 16#42#];
+   M7 : constant Byte_Array (0 .. 6) := [others => 16#AB#];
+   M8 : constant Byte_Array (0 .. 7) := [others => 16#AB#];
+   M9 : constant Byte_Array (0 .. 8) := [others => 16#AB#];
 
 begin
    -- TEST 1 — Hash_64 Determinism
@@ -86,9 +86,9 @@ begin
    -- TEST 10 — Large Message Integrity
    Put_Line ("TEST 10 — Large Message Handling");
    declare
-      M_Large : constant Byte_Array (1 .. 100) := (others => 5);
-      M_Large_End_Mod : constant Byte_Array (1 .. 100) := (100 => 6, others => 5);
-      M_Large_Start_Mod : constant Byte_Array (1 .. 100) := (1 => 6, others => 5);
+      M_Large : constant Byte_Array (1 .. 100) := [others => 5];
+      M_Large_End_Mod : constant Byte_Array (1 .. 100) := [100 => 6, others => 5];
+      M_Large_Start_Mod : constant Byte_Array (1 .. 100) := [1 => 6, others => 5];
    begin
       Check ("10.1 Large message deterministic", Hash_64 (K0, M_Large) = Hash_64 (K0, M_Large));
       Check ("10.2 Avalanche on last byte of large msg", Hash_64 (K0, M_Large) /= Hash_64 (K0, M_Large_End_Mod));
@@ -98,10 +98,12 @@ begin
    -- TEST 11 — Error Handling and Invariants
    Put_Line ("TEST 11 — Constraint Checks on Invalid Usage");
    declare
-      Dummy_Key : constant Byte_Array (0 .. 10) := (others => 0);
+      Dummy_Key : constant Byte_Array (0 .. 10) := [others => 0];
       function Make_Bad_Key return Key_Type is
       begin
+         pragma Warnings (Off);
          return Key_Type (Dummy_Key);
+         pragma Warnings (On);
       end Make_Bad_Key;
    begin
       begin
@@ -144,7 +146,7 @@ begin
    -- TEST 12 — Array Slices and Arbitrary Indexing
    Put_Line ("TEST 12 — Array Slices & Unaligned Indexing");
    declare
-      Large_Buffer : constant Byte_Array (0 .. 31) := (others => 16#AB#);
+      Large_Buffer : constant Byte_Array (0 .. 31) := [others => 16#AB#];
       Slice_Msg    : constant Byte_Array := Large_Buffer (5 .. 12); -- 8 bytes long, non-zero indexed
    begin
       Check ("12.1 Sliced array equals statically defined bounds", Hash_64 (K0, M8) = Hash_64 (K0, Slice_Msg));
@@ -155,7 +157,7 @@ begin
    -- TEST 13 — Extreme Length Module 256 Edge Case
    Put_Line ("TEST 13 — High Bit Length Padding (256 bytes)");
    declare
-      Msg_256 : constant Byte_Array (1 .. 256) := (others => 0);
+      Msg_256 : constant Byte_Array (1 .. 256) := [others => 0];
    begin
       -- A 256-byte message length evaluates to 0 mod 256. Validates the padding byte doesn't overflow or fault.
       Check ("13.1 Hash 256-byte msg determinism", Hash_64 (K0, Msg_256) = Hash_64 (K0, Msg_256));
