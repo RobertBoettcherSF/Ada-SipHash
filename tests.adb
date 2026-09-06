@@ -98,11 +98,18 @@ begin
    -- TEST 11 — Error Handling and Invariants
    Put_Line ("TEST 11 — Constraint Checks on Invalid Usage");
    declare
-      Val  : Word64;
-      Zero : Natural := 0; -- Bypass static type checks to force runtime CE
+      Dummy_Key : constant Byte_Array (0 .. 10) := (others => 0);
+      function Make_Bad_Key return Key_Type is
+      begin
+         return Key_Type (Dummy_Key);
+      end Make_Bad_Key;
    begin
       begin
-         Val := Hash_64 (K0, M0, C => Zero);
+         pragma Warnings (Off);
+         if Hash_64 (K0, M0, C => 0) = 0 then
+            null;
+         end if;
+         pragma Warnings (On);
          Check ("11.1 Zero compression rounds should raise Constraint_Error", False);
       exception
          when Constraint_Error =>
@@ -110,7 +117,11 @@ begin
       end;
 
       begin
-         Val := Hash_64 (K0, M0, D => Zero);
+         pragma Warnings (Off);
+         if Hash_64 (K0, M0, D => 0) = 0 then
+            null;
+         end if;
+         pragma Warnings (On);
          Check ("11.2 Zero finalization rounds should raise Constraint_Error", False);
       exception
          when Constraint_Error =>
@@ -118,20 +129,15 @@ begin
       end;
 
       begin
-         declare
-            Bad_Key_Array : constant Byte_Array (0 .. 10) := (others => 0);
-            function Make_Bad_Key return Key_Type is
-            begin
-               return Key_Type (Bad_Key_Array);
-            end Make_Bad_Key;
-            Dummy_Key : Key_Type;
-         begin
-            Dummy_Key := Make_Bad_Key;
-            Check ("11.3 Invalid key length should raise Constraint_Error", False);
-         exception
-            when Constraint_Error =>
-               Check ("11.3 Invalid key length should raise Constraint_Error", True);
-         end;
+         pragma Warnings (Off);
+         if Hash_64 (Make_Bad_Key, M0) = 0 then
+            null;
+         end if;
+         pragma Warnings (On);
+         Check ("11.3 Invalid key length should raise Constraint_Error", False);
+      exception
+         when Constraint_Error =>
+            Check ("11.3 Invalid key length should raise Constraint_Error", True);
       end;
    end;
 
